@@ -14,6 +14,7 @@ import com.heroku.api.Addon;
 import com.heroku.api.AddonChange;
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
+import com.heroku.api.exception.RequestFailedException;
 import com.heroku.sdk.deploy.DeployWar;
 
 
@@ -36,6 +37,11 @@ public class HerokuConnector
 	 */
 	private HerokuAPI _hApiClient;
 	
+	/**
+	 * HEROKU KEY - FROM ENVIRONMENT VALUES
+	 */
+	public static String ENV_HEROKU_API_KEY = "HEROKU_API_KEY";
+	
 	// DEFAULT / GLOBAL PROPERTIES
 	public static String DEFAULT_WEBAPP_RUNNER_VERSION = "8.0.23.0";
 	public static String WEBAPP_RUNNER_URL_FORMAT = "http://central.maven.org/maven2/com/github/jsimone/webapp-runner/%s/webapp-runner-%s.jar";
@@ -53,11 +59,18 @@ public class HerokuConnector
 	{
 		logAdapter.log(Level.INFO, ">> Connecting to Heroku ...");
 		
-		String apiKey = System.getenv("HEROKU_API_KEY");
+		String apiKey = System.getenv(ENV_HEROKU_API_KEY);
 		if ((apiKey != null) && (!apiKey.isEmpty()))
 		{
-			_hApiClient = new HerokuAPI(apiKey);
-			logAdapter.log(Level.INFO, ">> Connection established");
+			try 
+			{
+				_hApiClient = new HerokuAPI(apiKey);
+				logAdapter.log(Level.INFO, ">> Connection established: " + _hApiClient.getUserInfo().getId());
+			} 
+			catch (RequestFailedException e) 
+			{
+				logAdapter.log(Level.WARNING, ">> Not connected to Heroku: " + e.getMessage());
+			}
 		}
 		else
 		{
@@ -78,8 +91,15 @@ public class HerokuConnector
 		String apiKey = HerokuAPI.obtainApiKey(login, passwd);
 		if ((apiKey != null) && (!apiKey.isEmpty()))
 		{
-			_hApiClient = new HerokuAPI(apiKey);
-			logAdapter.log(Level.INFO, ">> Connection established");
+			try 
+			{
+				_hApiClient = new HerokuAPI(apiKey);
+				logAdapter.log(Level.INFO, ">> Connection established: " + _hApiClient.getUserInfo().getId());
+			} 
+			catch (RequestFailedException e) 
+			{
+				logAdapter.log(Level.WARNING, ">> Not connected to Heroku: " + e.getMessage());
+			}
 		}
 		else
 		{
@@ -524,6 +544,13 @@ public class HerokuConnector
 	public static void setPROPERTY_DEFAULT_INCLUDES_VALUE(String pROPERTY_DEFAULT_INCLUDES_VALUE)
 	{
 		PROPERTY_DEFAULT_INCLUDES_VALUE = pROPERTY_DEFAULT_INCLUDES_VALUE;
+	}
+	
+	
+	
+	public static void main(String args[])
+	{
+		HerokuConnector h = new HerokuConnector();
 	}
 	
 
