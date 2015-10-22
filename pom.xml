@@ -19,11 +19,9 @@
 	<dependencies>
 		<!-- HEROKU java apps deployment -->
 		<dependency>
-	      	<groupId>heroku-java</groupId>
-	      	<artifactId>deploy</artifactId>
-	      	<version>0.5.4-SNAPSHOT</version>
-	      	<scope>system</scope>
-	      	<systemPath>${basedir}/lib/heroku-deploy-0.5.4-SNAPSHOT-jar-with-dependencies.jar</systemPath>
+	      	<groupId>com.heroku.sdk</groupId>
+	      	<artifactId>heroku-deploy</artifactId>
+	      	<version>0.5.6-SNAPSHOT</version>
 	    </dependency>
 		
 		<!-- HEROKU -->
