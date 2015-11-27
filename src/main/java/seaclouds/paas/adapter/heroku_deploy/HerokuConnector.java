@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.heroku.api.Heroku;
 import com.heroku.api.Addon;
 import com.heroku.api.AddonChange;
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
 import com.heroku.api.exception.RequestFailedException;
+import com.heroku.sdk.deploy.DeployWar;
 
 
 /**
@@ -184,7 +186,7 @@ public class HerokuConnector
 				String webappRunnerVersion = DEFAULT_WEBAPP_RUNNER_VERSION;
 				String webappRunnerUrl = String.format(WEBAPP_RUNNER_URL_FORMAT, webappRunnerVersion, webappRunnerVersion);
 				
-				XDeployWar deployWarApp = new XDeployWar(applicationName, new File(warFile), new URL(webappRunnerUrl), apiKey);
+				DeployWar deployWarApp = new DeployWar(applicationName, new File(warFile), new URL(webappRunnerUrl), apiKey);
 				deployWarApp.deploy(includes, new HashMap<String, String>(), jdkUrl == null ? jdkVersion : jdkUrl, stack, slugFileName);
 				
 				logAdapter.log(Level.INFO, ">> Application deployed");
