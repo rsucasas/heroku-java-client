@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.heroku.api.Heroku;
 import com.heroku.api.Addon;
 import com.heroku.api.AddonChange;
@@ -25,7 +26,7 @@ import com.heroku.sdk.deploy.DeployWar;
  */
 public class HerokuConnector
 {
-	
+	private String apiKey;
 	
 	/**
 	 * logs
@@ -59,25 +60,14 @@ public class HerokuConnector
 	{
 		logAdapter.log(Level.INFO, ">> Connecting to Heroku ...");
 		
-		String apiKey = System.getenv(ENV_HEROKU_API_KEY);
-		if ((apiKey != null) && (!apiKey.isEmpty()))
-		{
-			try 
-			{
-				_hApiClient = new HerokuAPI(apiKey);
-				logAdapter.log(Level.INFO, ">> Connection established: " + _hApiClient.getUserInfo().getId());
-			} 
-			catch (RequestFailedException e) 
-			{
-				logAdapter.log(Level.WARNING, ">> Not connected to Heroku: " + e.getMessage());
-			}
-		}
-		else
-		{
-			logAdapter.log(Level.WARNING, ">> Not connected to Heroku: API key is null or empty");
-		}
+		apiKey = System.getenv(ENV_HEROKU_API_KEY);
+		connect();
 	}
 	
+	public HerokuConnector(String apiKey) {
+	    this.apiKey = apiKey;
+	    connect();
+	}
 	
 	/**
 	 * 
@@ -88,25 +78,31 @@ public class HerokuConnector
 	{
 		logAdapter.log(Level.INFO, ">> Connecting to Heroku ...");
 		
-		String apiKey = HerokuAPI.obtainApiKey(login, passwd);
-		if ((apiKey != null) && (!apiKey.isEmpty()))
-		{
-			try 
-			{
-				_hApiClient = new HerokuAPI(apiKey);
-				logAdapter.log(Level.INFO, ">> Connection established: " + _hApiClient.getUserInfo().getId());
-			} 
-			catch (RequestFailedException e) 
-			{
-				logAdapter.log(Level.WARNING, ">> Not connected to Heroku: " + e.getMessage());
-			}
-		}
-		else
-		{
-			logAdapter.log(Level.WARNING, ">> Not connected to Heroku: API key is null or empty");
-		}
+		apiKey = HerokuAPI.obtainApiKey(login, passwd);
+		connect();
 	}
-	
+
+	private void connect() {
+        if ((apiKey != null) && (!apiKey.isEmpty()))
+        {
+            try 
+            {
+                _hApiClient = new HerokuAPI(apiKey);
+                logAdapter.log(Level.INFO, ">> Connection established: " + _hApiClient.getUserInfo().getId());
+                return;
+            } 
+            catch (RequestFailedException e) 
+            {
+                logAdapter.log(Level.WARNING, ">> Not connected to Heroku: " + e.getMessage());
+                throw new RuntimeException("Not connected to Heroku: " + e.getMessage(), e);
+            }
+        }
+        else
+        {
+            logAdapter.log(Level.WARNING, ">> Not connected to Heroku: API key is null or empty");
+            throw new RuntimeException("Not connected to Heroku: API key is null or empty");
+        }
+	}
 	
 	/**
 	 * 
@@ -190,7 +186,7 @@ public class HerokuConnector
 				String webappRunnerVersion = DEFAULT_WEBAPP_RUNNER_VERSION;
 				String webappRunnerUrl = String.format(WEBAPP_RUNNER_URL_FORMAT, webappRunnerVersion, webappRunnerVersion);
 				
-				DeployWar deployWarApp = new DeployWar(applicationName, new File(warFile), new URL(webappRunnerUrl));
+				DeployWar deployWarApp = new DeployWar(applicationName, new File(warFile), new URL(webappRunnerUrl), apiKey);
 				deployWarApp.deploy(includes, new HashMap<String, String>(), jdkUrl == null ? jdkVersion : jdkUrl, stack, slugFileName);
 				
 				logAdapter.log(Level.INFO, ">> Application deployed");
